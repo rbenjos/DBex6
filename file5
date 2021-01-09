@@ -1,0 +1,65 @@
+** Creating table:
+ create table accounts(id integer primary key, owner varchar, balance integer);
+** Inserting rows:
+ insert into accounts values(1, 'alice', 100), (2, 'bob', 100), (3, 'claire', 100);
+** Setting isolation levels:
+ REPEATABLE READ
+
+TRANSACTION 1
+=============
+select * from accounts
+(1, 'alice', 100)
+(2, 'bob', 100)
+(3, 'claire', 100)
+
+TRANSACTION 1
+=============
+insert into accounts select 5, 'trans1', sum(balance) from accounts returning *
+(5, 'trans1', 300)
+
+TRANSACTION 1
+=============
+select * from accounts
+(1, 'alice', 100)
+(2, 'bob', 100)
+(3, 'claire', 100)
+(5, 'trans1', 300)
+
+TRANSACTION 2
+=============
+select * from accounts
+(1, 'alice', 100)
+(2, 'bob', 100)
+(3, 'claire', 100)
+
+TRANSACTION 2
+=============
+insert into accounts select 6, 'trans2', sum(balance) from accounts returning *
+(6, 'trans2', 300)
+
+TRANSACTION 2
+=============
+select * from accounts
+(1, 'alice', 100)
+(2, 'bob', 100)
+(3, 'claire', 100)
+(6, 'trans2', 300)
+
+TRANSACTION 1
+=============
+ATTEMPT COMMIT: 
+COMMIT SUCCEEDED
+
+TRANSACTION 2
+=============
+ATTEMPT COMMIT: 
+COMMIT SUCCEEDED
+
+TRANSACTION 3
+=============
+select * from accounts
+(1, 'alice', 100)
+(2, 'bob', 100)
+(3, 'claire', 100)
+(5, 'trans1', 300)
+(6, 'trans2', 300)

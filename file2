@@ -1,0 +1,43 @@
+** Creating table:
+ create table accounts(id integer primary key, owner varchar, balance integer);
+** Inserting rows:
+ insert into accounts values(1, 'alice', 100), (2, 'bob', 100), (3, 'claire', 100);
+** Setting isolation levels:
+ REPEATABLE READ
+
+TRANSACTION 1
+=============
+select * from accounts
+(1, 'alice', 100)
+(2, 'bob', 100)
+(3, 'claire', 100)
+
+TRANSACTION 2
+=============
+select * from accounts where id = 1
+(1, 'alice', 100)
+
+TRANSACTION 1
+=============
+update accounts set balance = balance - 10 where id = 1 returning *
+(1, 'alice', 90)
+
+TRANSACTION 2
+=============
+select * from accounts where id = 1
+(1, 'alice', 100)
+
+TRANSACTION 1
+=============
+ATTEMPT COMMIT: 
+COMMIT SUCCEEDED
+
+TRANSACTION 2
+=============
+select * from accounts where id = 1
+(1, 'alice', 100)
+
+TRANSACTION 2
+=============
+ATTEMPT COMMIT: 
+COMMIT SUCCEEDED
